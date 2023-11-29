@@ -32,8 +32,4 @@ class Maxsim(nn.Module):
         d = D.expand(q_size, d_size, self.doc_maxlen, self.dim)
         q = Q.expand(d_size, q_size, self.query_maxlen, self.dim).permute(1,0,2,3)
 
-        # if similarity_metric == "cosine":
-        res = (q @ d.permute(0, 1, 3, 2)).max(3).values.sum(2)
-        # else:
-            # res = (-1.0 * ((Q.unsqueeze(2) - D.unsqueeze(1))**2).sum(-1)).max(-1).values.sum(-1)
-        return res
+        return (q @ d.permute(0, 1, 3, 2)).max(3).values.sum(2)

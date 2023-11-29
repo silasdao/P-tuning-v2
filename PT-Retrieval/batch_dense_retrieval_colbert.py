@@ -53,7 +53,10 @@ def gen_ctx_vectors(ctx_rows: List[Tuple[object, str, str]], inference,
     total = 0
     results = []
     for j, batch_start in tqdm(enumerate(range(0, n, bsz)), total=round(n/bsz)):
-        batch = [ctx[2] + '. ' + ctx[1] for ctx in ctx_rows[batch_start:batch_start + bsz]]
+        batch = [
+            f'{ctx[2]}. {ctx[1]}'
+            for ctx in ctx_rows[batch_start : batch_start + bsz]
+        ]
         embs = inference.docFromText(batch, bsize=32, keep_dims=True)
         # print(embs.shape)
         assert len(embs) == len(batch)
@@ -67,17 +70,13 @@ def gen_ctx_vectors(ctx_rows: List[Tuple[object, str, str]], inference,
         total += len(ctx_ids)
         results.append(out.numpy())
 
-    results = np.concatenate(results, axis=0)
-    # print(results.shape)
-    return results
+    return np.concatenate(results, axis=0)
 
 def prepare_encoders(args):
     colbert, _ = load_colbert(args)
     colbert.cuda()
     colbert.eval()
-    inference = ModelInference(colbert, amp=args.amp)
-
-    return inference
+    return ModelInference(colbert, amp=args.amp)
 
 def batch_retrieval(args, topic, inference):
     logger.info("------------------------------------------------")
@@ -95,9 +94,9 @@ def batch_retrieval(args, topic, inference):
 
     data = gen_ctx_vectors(rows, inference, args, True) 
 
-    file = args.out_file + '.pkl'
+    file = f'{args.out_file}.pkl'
     pathlib.Path(os.path.dirname(file)).mkdir(parents=True, exist_ok=True)
-    logger.info('Writing results to %s' % file)
+    logger.info(f'Writing results to {file}')
     with open(file, mode='wb') as f:
         pickle.dump(data, f)
 
@@ -169,12 +168,10 @@ if __name__ == '__main__':
     setup_args_gpu(args)
 
     inference = prepare_encoders(args)    
-   
+
     eval_list = []
     with open(args.input_file, 'r') as f:
-        for line in f.readlines():
-            eval_list.append(line.strip())
-
+        eval_list.extend(line.strip() for line in f)
     print("Eval list =", eval_list)
 
     result_dict = {}
@@ -183,9 +180,7 @@ if __name__ == '__main__':
         top_k_hits = batch_retrieval(args, topic, inference)
         result_dict[topic] = top_k_hits[-1]
 
-    scores = 0
-    for topic, value in result_dict.items():
-        scores += value
+    scores = sum(result_dict.values())
     avg_score = scores / len(result_dict)
     result_dict["average"] = avg_score
 

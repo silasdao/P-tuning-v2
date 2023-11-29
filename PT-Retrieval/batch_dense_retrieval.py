@@ -72,9 +72,9 @@ def batch_retrieval(args, topic, ctx_model, retriever, tensorizer):
 
     data = gen_ctx_vectors(rows, ctx_model, tensorizer, args, True) 
 
-    file = args.out_file + '.pkl'
+    file = f'{args.out_file}.pkl'
     pathlib.Path(os.path.dirname(file)).mkdir(parents=True, exist_ok=True)
-    logger.info('Writing results to %s' % file)
+    logger.info(f'Writing results to {file}')
     with open(file, mode='wb') as f:
         pickle.dump(data, f)
 
@@ -128,7 +128,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     setup_args_gpu(args)
 
-    ctx_model, question_model, tensorizer = prepare_encoders(args)    
+    ctx_model, question_model, tensorizer = prepare_encoders(args)
     vector_size = question_model.get_out_size()
     if args.hnsw_index:
         index = DenseHNSWFlatIndexer(vector_size, args.index_buffer)
@@ -139,9 +139,7 @@ if __name__ == '__main__':
 
     eval_list = []
     with open(args.input_file, 'r') as f:
-        for line in f.readlines():
-            eval_list.append(line.strip())
-
+        eval_list.extend(line.strip() for line in f)
     print("Eval list =", eval_list)
 
     result_dict = {}
@@ -150,11 +148,9 @@ if __name__ == '__main__':
         top_k_hits = batch_retrieval(args, topic, ctx_model, retriever, tensorizer)
         result_dict[topic] = top_k_hits[-1]
 
-    scores = 0
-    for topic, value in result_dict.items():
-        scores += value
+    scores = sum(result_dict.values())
     avg_score = scores / len(result_dict)
     result_dict["average"] = avg_score
-    
+
     os.makedirs(os.path.dirname(args.result_file), exist_ok=True)
     json.dump(result_dict, open(args.result_file, 'w'))

@@ -94,7 +94,7 @@ def get_model(model_args, task_type: TaskType, config: AutoConfig, fix_bert: boo
         config.pre_seq_len = model_args.pre_seq_len
         config.prefix_projection = model_args.prefix_projection
         config.prefix_hidden_size = model_args.prefix_hidden_size
-        
+
         model_class = PREFIX_MODELS[config.model_type][task_type]
         model = model_class.from_pretrained(
             model_args.model_name_or_path,
@@ -134,11 +134,9 @@ def get_model(model_args, task_type: TaskType, config: AutoConfig, fix_bert: boo
                     param.requires_grad = False
                 for _, param in model.deberta.named_parameters():
                     bert_param += param.numel()
-        all_param = 0
-        for _, param in model.named_parameters():
-            all_param += param.numel()
+        all_param = sum(param.numel() for _, param in model.named_parameters())
         total_param = all_param - bert_param
-        print('***** total param is {} *****'.format(total_param))
+        print(f'***** total param is {total_param} *****')
     return model
 
 
@@ -204,7 +202,7 @@ def get_model_deprecated(model_args, task_type: TaskType, config: AutoConfig, fi
             )
         else:
             raise NotImplementedError
-            
+
 
     else:
         if task_type == TaskType.TOKEN_CLASSIFICATION:
@@ -213,7 +211,7 @@ def get_model_deprecated(model_args, task_type: TaskType, config: AutoConfig, fi
                 config=config,
                 revision=model_args.model_revision,
             )
-            
+
         elif task_type == TaskType.SEQUENCE_CLASSIFICATION:
             model = AutoModelForSequenceClassification.from_pretrained(
                 model_args.model_name_or_path,
@@ -233,7 +231,7 @@ def get_model_deprecated(model_args, task_type: TaskType, config: AutoConfig, fi
                 config=config,
                 revision=model_args.model_revision,
             )
-    
+
         bert_param = 0
         if fix_bert:
             if config.model_type == "bert":
@@ -251,9 +249,7 @@ def get_model_deprecated(model_args, task_type: TaskType, config: AutoConfig, fi
                     param.requires_grad = False
                 for _, param in model.deberta.named_parameters():
                     bert_param += param.numel()
-        all_param = 0
-        for _, param in model.named_parameters():
-            all_param += param.numel()
+        all_param = sum(param.numel() for _, param in model.named_parameters())
         total_param = all_param - bert_param
-        print('***** total param is {} *****'.format(total_param))
+        print(f'***** total param is {total_param} *****')
     return model

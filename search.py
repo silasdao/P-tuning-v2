@@ -22,8 +22,8 @@ files = glob(f"./checkpoints/{TASK}-{MODEL}-search/*/best_results.json")
 
 for f in files:
     metrics = json.load(open(f, 'r'))
-    if metrics["best_eval_"+METRIC] > best_score:
-        best_score = metrics["best_eval_"+METRIC]
+    if metrics[f"best_eval_{METRIC}"] > best_score:
+        best_score = metrics[f"best_eval_{METRIC}"]
         best_metrics = metrics
         best_file_name = f
 

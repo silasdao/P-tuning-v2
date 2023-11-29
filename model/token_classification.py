@@ -31,14 +31,10 @@ class BertForTokenClassification(BertPreTrainedModel):
 
         self.init_weights()
 
-        bert_param = 0
-        for name, param in self.bert.named_parameters():
-            bert_param += param.numel()
-        all_param = 0
-        for name, param in self.named_parameters():
-            all_param += param.numel()
+        bert_param = sum(param.numel() for name, param in self.bert.named_parameters())
+        all_param = sum(param.numel() for name, param in self.named_parameters())
         total_param = all_param - bert_param
-        print('total param is {}'.format(total_param))
+        print(f'total param is {total_param}')
 
     
     def forward(
@@ -118,7 +114,7 @@ class BertPrefixForTokenClassification(BertPreTrainedModel):
 
         for param in self.bert.parameters():
             param.requires_grad = False
-        
+
         self.pre_seq_len = config.pre_seq_len
         self.n_layer = config.num_hidden_layers
         self.n_head = config.num_attention_heads
@@ -126,16 +122,12 @@ class BertPrefixForTokenClassification(BertPreTrainedModel):
 
         self.prefix_tokens = torch.arange(self.pre_seq_len).long()
         self.prefix_encoder = PrefixEncoder(config)
- 
 
-        bert_param = 0
-        for name, param in self.bert.named_parameters():
-            bert_param += param.numel()
-        all_param = 0
-        for name, param in self.named_parameters():
-            all_param += param.numel()
+
+        bert_param = sum(param.numel() for name, param in self.bert.named_parameters())
+        all_param = sum(param.numel() for name, param in self.named_parameters())
         total_param = all_param - bert_param
-        print('total param is {}'.format(total_param)) # 9860105
+        print(f'total param is {total_param}')
     
     def get_prompt(self, batch_size):
         prefix_tokens = self.prefix_tokens.unsqueeze(0).expand(batch_size, -1).to(self.bert.device)
@@ -229,7 +221,7 @@ class RobertaPrefixForTokenClassification(RobertaPreTrainedModel):
 
         for param in self.roberta.parameters():
             param.requires_grad = False
-        
+
         self.pre_seq_len = config.pre_seq_len
         self.n_layer = config.num_hidden_layers
         self.n_head = config.num_attention_heads
@@ -238,14 +230,12 @@ class RobertaPrefixForTokenClassification(RobertaPreTrainedModel):
         self.prefix_tokens = torch.arange(self.pre_seq_len).long()
         self.prefix_encoder = PrefixEncoder(config)
 
-        bert_param = 0
-        for name, param in self.roberta.named_parameters():
-            bert_param += param.numel()
-        all_param = 0
-        for name, param in self.named_parameters():
-            all_param += param.numel()
+        bert_param = sum(
+            param.numel() for name, param in self.roberta.named_parameters()
+        )
+        all_param = sum(param.numel() for name, param in self.named_parameters())
         total_param = all_param - bert_param
-        print('total param is {}'.format(total_param)) # 9860105
+        print(f'total param is {total_param}')
 
     
     def get_prompt(self, batch_size):
@@ -337,7 +327,7 @@ class DebertaPrefixForTokenClassification(DebertaPreTrainedModel):
 
         for param in self.deberta.parameters():
             param.requires_grad = False
-        
+
         self.pre_seq_len = config.pre_seq_len
         self.n_layer = config.num_hidden_layers
         self.n_head = config.num_attention_heads
@@ -346,14 +336,12 @@ class DebertaPrefixForTokenClassification(DebertaPreTrainedModel):
         self.prefix_tokens = torch.arange(self.pre_seq_len).long()
         self.prefix_encoder = PrefixEncoder(config)
 
-        deberta_param = 0
-        for name, param in self.deberta.named_parameters():
-            deberta_param += param.numel()
-        all_param = 0
-        for name, param in self.named_parameters():
-            all_param += param.numel()
+        deberta_param = sum(
+            param.numel() for name, param in self.deberta.named_parameters()
+        )
+        all_param = sum(param.numel() for name, param in self.named_parameters())
         total_param = all_param - deberta_param
-        print('total param is {}'.format(total_param)) # 9860105
+        print(f'total param is {total_param}')
     
     def get_prompt(self, batch_size):
         prefix_tokens = self.prefix_tokens.unsqueeze(0).expand(batch_size, -1).to(self.deberta.device)
@@ -444,7 +432,7 @@ class DebertaV2PrefixForTokenClassification(DebertaV2PreTrainedModel):
 
         for param in self.deberta.parameters():
             param.requires_grad = False
-        
+
         self.pre_seq_len = config.pre_seq_len
         self.n_layer = config.num_hidden_layers
         self.n_head = config.num_attention_heads
@@ -453,14 +441,12 @@ class DebertaV2PrefixForTokenClassification(DebertaV2PreTrainedModel):
         self.prefix_tokens = torch.arange(self.pre_seq_len).long()
         self.prefix_encoder = PrefixEncoder(config)
 
-        deberta_param = 0
-        for name, param in self.deberta.named_parameters():
-            deberta_param += param.numel()
-        all_param = 0
-        for name, param in self.named_parameters():
-            all_param += param.numel()
+        deberta_param = sum(
+            param.numel() for name, param in self.deberta.named_parameters()
+        )
+        all_param = sum(param.numel() for name, param in self.named_parameters())
         total_param = all_param - deberta_param
-        print('total param is {}'.format(total_param)) # 9860105
+        print(f'total param is {total_param}')
     
     def get_prompt(self, batch_size):
         prefix_tokens = self.prefix_tokens.unsqueeze(0).expand(batch_size, -1).to(self.deberta.device)

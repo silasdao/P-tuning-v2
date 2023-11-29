@@ -66,8 +66,7 @@ class DenseRetriever(object):
         query_vectors = []
 
         with torch.no_grad():
-            for j, batch_start in enumerate(range(0, n, bsz)):
-
+            for batch_start in range(0, n, bsz):
                 queries = questions[batch_start:batch_start + bsz]
                 out = self.inferece.queryFromText(queries, bsize=256)
 
@@ -155,7 +154,7 @@ def load_passages(ctx_file: str) -> Dict[object, Tuple[str, str]]:
 
 
 def iterate_encoded_files(vector_files: list) -> Iterator[Tuple[object, np.array]]:
-    for i, file in enumerate(vector_files):
+    for file in vector_files:
         logger.info('Reading file %s', file)
         with open(file, "rb") as reader:
             doc_vectors = pickle.load(reader)

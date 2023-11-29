@@ -37,9 +37,7 @@ def dot_product_scores(q_vectors: T, ctx_vectors: T) -> T:
     :param ctx_vector:
     :return:
     """
-    # q_vector: n1 x D, ctx_vectors: n2 x D, result n1 x n2
-    r = torch.matmul(q_vectors, torch.transpose(ctx_vectors, 0, 1))
-    return r
+    return torch.matmul(q_vectors, torch.transpose(ctx_vectors, 0, 1))
 
 
 def cosine_scores(q_vector: T, ctx_vectors: T):
@@ -132,8 +130,8 @@ class BiEncoder(nn.Module):
                 random.shuffle(neg_ctxs)
                 random.shuffle(hard_neg_ctxs)
 
-            neg_ctxs = neg_ctxs[0:num_other_negatives]
-            hard_neg_ctxs = hard_neg_ctxs[0:num_hard_negatives]
+            neg_ctxs = neg_ctxs[:num_other_negatives]
+            hard_neg_ctxs = hard_neg_ctxs[:num_hard_negatives]
 
             all_ctxs = [positive_ctx] + neg_ctxs + hard_neg_ctxs
             hard_negatives_start_idx = 1
@@ -148,8 +146,13 @@ class BiEncoder(nn.Module):
             ctx_tensors.extend(sample_ctxs_tensors)
             positive_ctx_indices.append(current_ctxs_len)
             hard_neg_ctx_indices.append(
-                [i for i in
-                 range(current_ctxs_len + hard_negatives_start_idx, current_ctxs_len + hard_negatives_end_idx)])
+                list(
+                    range(
+                        current_ctxs_len + hard_negatives_start_idx,
+                        current_ctxs_len + hard_negatives_end_idx,
+                    )
+                )
+            )
 
             question_tensors.append(tensorizer.text_to_tensor(question))
 

@@ -161,7 +161,7 @@ def _calc_mml(loss_tensor):
 def _pad_to_len(seq: T, pad_id: int, max_len: int):
     s_len = seq.size(0)
     if s_len > max_len:
-        return seq[0: max_len]
+        return seq[:max_len]
     return torch.cat([seq, torch.Tensor().new_full((max_len - s_len,), pad_id, dtype=torch.long)], dim=0)
 
 
@@ -194,7 +194,9 @@ def _create_question_passages_tensors(positives: List[ReaderPassage], negatives:
         if positive_idx is None:
             return None
         logger.warning("POS: %s", positives[positive_idx].title)
-        positive_a_spans = _get_answer_spans(positive_idx, positives, max_len)[0: max_n_answers]
+        positive_a_spans = _get_answer_spans(positive_idx, positives, max_len)[
+            :max_n_answers
+        ]
 
         answer_starts = [span[0] for span in positive_a_spans]
         answer_ends = [span[1] for span in positive_a_spans]
@@ -232,5 +234,5 @@ def _create_question_passages_tensors(positives: List[ReaderPassage], negatives:
     while len(negatives_selected) < total_size - positives_num:
         negatives_selected.append(empty_ids.clone())
 
-    input_ids = torch.stack([t for t in positives_selected + negatives_selected], dim=0)
+    input_ids = torch.stack(list(positives_selected + negatives_selected), dim=0)
     return input_ids, answer_starts_tensor, answer_ends_tensor, answer_mask

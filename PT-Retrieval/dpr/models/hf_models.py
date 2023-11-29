@@ -94,12 +94,24 @@ def get_optimizer(model: nn.Module, learning_rate: float = 1e-5, adam_eps: float
     no_decay = ['bias', 'LayerNorm.weight']
 
     optimizer_grouped_parameters = [
-        {'params': [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)],
-         'weight_decay': weight_decay},
-        {'params': [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
+        {
+            'params': [
+                p
+                for n, p in model.named_parameters()
+                if all(nd not in n for nd in no_decay)
+            ],
+            'weight_decay': weight_decay,
+        },
+        {
+            'params': [
+                p
+                for n, p in model.named_parameters()
+                if any(nd in n for nd in no_decay)
+            ],
+            'weight_decay': 0.0,
+        },
     ]
-    optimizer = AdamW(optimizer_grouped_parameters, lr=learning_rate, eps=adam_eps)
-    return optimizer
+    return AdamW(optimizer_grouped_parameters, lr=learning_rate, eps=adam_eps)
 
 def get_bert_tokenizer(pretrained_cfg_name: str, do_lower_case: bool = True):
     return BertTokenizer.from_pretrained(pretrained_cfg_name, do_lower_case=do_lower_case, cache_dir=".cache")
@@ -346,7 +358,7 @@ class BertTensorizer(Tensorizer):
         if self.pad_to_max and len(token_ids) < seq_len:
             token_ids = token_ids + [self.tokenizer.pad_token_id] * (seq_len - len(token_ids))
         if len(token_ids) > seq_len:
-            token_ids = token_ids[0:seq_len]
+            token_ids = token_ids[:seq_len]
             token_ids[-1] = self.tokenizer.sep_token_id
 
         return torch.tensor(token_ids)

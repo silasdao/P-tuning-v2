@@ -32,8 +32,8 @@ class MixedPrecisionManager():
 
             self.scaler.step(optimizer)
             self.scaler.update()
-            optimizer.zero_grad()
         else:
             torch.nn.utils.clip_grad_norm_(colbert.parameters(), 2.0)
             optimizer.step()
-            optimizer.zero_grad()
+
+        optimizer.zero_grad()

@@ -75,7 +75,7 @@ def main(args):
         saved_state = load_states_from_checkpoint(args.model_file)
         set_encoder_params_from_state(saved_state.encoder_params, args)
     print_args(args)
-    
+
     tensorizer, encoder, _ = init_encoder_components("dpr", args, inference_only=True)
 
     encoder = encoder.ctx_model
@@ -90,7 +90,7 @@ def main(args):
     model_to_load = get_model_obj(encoder)
     logger.info('Loading saved model state ...')
     if args.adapter:
-        adapter_name = model_to_load.load_adapter(args.model_file+".q")
+        adapter_name = model_to_load.load_adapter(f"{args.model_file}.q")
         model_to_load.set_active_adapters(adapter_name)
     else:
         logger.debug('saved model keys =%s', saved_state.model_dict.keys())
@@ -121,9 +121,9 @@ def main(args):
 
     data = gen_ctx_vectors(rows, encoder, tensorizer, args, True) 
 
-    file = args.out_file + '-' + str(args.shard_id) + '.pkl'
+    file = f'{args.out_file}-{str(args.shard_id)}.pkl'
     pathlib.Path(os.path.dirname(file)).mkdir(parents=True, exist_ok=True)
-    logger.info('Writing results to %s' % file)
+    logger.info(f'Writing results to {file}')
     with open(file, mode='wb') as f:
         pickle.dump(data, f)
 

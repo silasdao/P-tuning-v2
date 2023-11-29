@@ -13,7 +13,7 @@ def load_collection_(path, retain_titles):
             _, passage, title = line.strip().split('\t')
 
             if retain_titles:
-                passage = title + ' | ' + passage
+                passage = f'{title} | {passage}'
 
             collection.append(passage)
 

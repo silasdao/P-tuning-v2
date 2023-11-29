@@ -45,12 +45,7 @@ class SuperGlueDataset():
         self.sentence1_key, self.sentence2_key = task_to_keys[data_args.dataset_name]
 
         # Padding strategy
-        if data_args.pad_to_max_length:
-            self.padding = "max_length"
-        else:
-            # We will pad later, dynamically at batch creation, to the max sequence length in each batch
-            self.padding = False
-
+        self.padding = "max_length" if data_args.pad_to_max_length else False
         if not self.multiple_choice:
             self.label2id = {l: i for i, l in enumerate(self.label_list)}
             self.id2label = {id: label for label, id in self.label2id.items()}
@@ -110,10 +105,10 @@ class SuperGlueDataset():
             examples["span2_word_text"] = []
             for text, span2_index, span2_word in zip(examples["text"], examples["span2_index"], examples["span2_text"]):
                 if self.data_args.template_id == 0:
-                    examples["span2_word_text"].append(span2_word + ": " + text)
+                    examples["span2_word_text"].append(f"{span2_word}: {text}")
                 elif self.data_args.template_id == 1:
                     words_a = text.split()
-                    words_a[span2_index] = "*" + words_a[span2_index] + "*"
+                    words_a[span2_index] = f"*{words_a[span2_index]}*"
                     examples["span2_word_text"].append(' '.join(words_a))
 
         # WiC
@@ -126,8 +121,8 @@ class SuperGlueDataset():
                 if self.data_args.template_id == 0: #ROBERTA
                     examples["processed_sentence1"].append(f"{sentence1} {sentence2} Does {word} have the same meaning in both sentences?")
                 elif self.data_args.template_id == 1: #BERT
-                    examples["processed_sentence1"].append(word + ": " + sentence1)
-                    examples["processed_sentence2"].append(word + ": " + sentence2)
+                    examples["processed_sentence1"].append(f"{word}: {sentence1}")
+                    examples["processed_sentence2"].append(f"{word}: {sentence2}")
 
         # MultiRC
         if self.data_args.dataset_name == "multirc":
@@ -156,9 +151,12 @@ class SuperGlueDataset():
         args = (
             (examples[self.sentence1_key],) if self.sentence2_key is None else (examples[self.sentence1_key], examples[self.sentence2_key])
         )
-        result = self.tokenizer(*args, padding=self.padding, max_length=self.max_seq_length, truncation=True)
-
-        return result
+        return self.tokenizer(
+            *args,
+            padding=self.padding,
+            max_length=self.max_seq_length,
+            truncation=True
+        )
 
     def compute_metrics(self, p: EvalPrediction):
         preds = p.predictions[0] if isinstance(p.predictions, tuple) else p.predictions
@@ -208,20 +206,20 @@ class SuperGlueDataset():
 
     def record_preprocess_function(self, examples, split="train"):
         results = {
-            "index": list(),
-            "question_id": list(),
-            "input_ids": list(),
-            "attention_mask": list(),
-            "token_type_ids": list(),
-            "label": list(),
-            "entity": list(),
-            "answers": list()
+            "index": [],
+            "question_id": [],
+            "input_ids": [],
+            "attention_mask": [],
+            "token_type_ids": [],
+            "label": [],
+            "entity": [],
+            "answers": [],
         }
         for idx, passage in enumerate(examples["passage"]):
             query, entities, answers =  examples["query"][idx], examples["entities"][idx], examples["answers"][idx]
             index = examples["idx"][idx]
             passage = passage.replace("@highlight\n", "- ")
-            
+
             for ent_idx, ent in enumerate(entities):
                 question = query.replace("@placeholder", ent)
                 result = self.tokenizer(passage, question, padding=self.padding, max_length=self.max_seq_length, truncation=True)

@@ -100,23 +100,18 @@ class NERDataset():
                 # print(token)
                 word_ids += [j] * len(token)
             word_ids += [None]
-            
+
             # word_ids = tokenized_inputs.word_ids(batch_index=i)
             previous_word_idx = None
             label_ids = []
             for word_idx in word_ids:
                 # Special tokens have a word id that is None. We set the label to -100 so they are automatically
                 # ignored in the loss function.
-                if word_idx is None:
+                if word_idx is None or word_idx == previous_word_idx:
                     label_ids.append(-100)
-                # We set the label for the first token of each word.
-                elif word_idx != previous_word_idx:
+                else:
                     label_ids.append(label[word_idx])
                     # label_ids.append(self.label_to_id[label[word_idx]])
-                # For the other tokens in a word, we set the label to either the current label or -100, depending on
-                # the label_all_tokens flag.
-                else:
-                    label_ids.append(-100)
                 previous_word_idx = word_idx
 
             labels.append(label_ids)

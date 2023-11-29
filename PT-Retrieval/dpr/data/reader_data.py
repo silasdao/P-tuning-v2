@@ -155,7 +155,7 @@ def preprocess_retriever_data(samples: List[Dict], gold_info_file: Optional[str]
         positive_passages = [create_reader_sample_ids(s, question) for s in positive_passages]
         negative_passages = [create_reader_sample_ids(s, question) for s in negative_passages]
 
-        if is_train_set and len(positive_passages) == 0:
+        if is_train_set and not positive_passages:
             no_positive_passages += 1
             if cfg.skip_no_positves:
                 continue
@@ -201,13 +201,11 @@ def convert_retriever_results(is_train_set: bool, input_file: str, out_file_pref
 
     logger.info("Split data into %d chunks", len(chunks))
 
-    processed = 0
     _parse_batch = partial(_preprocess_reader_samples_chunk, out_file_prefix=out_file_prefix,
                            gold_passages_file=gold_passages_file, tensorizer=tensorizer,
                            is_train_set=is_train_set)
     serialized_files = []
-    for file_name in workers.map(_parse_batch, chunks):
-        processed += 1
+    for processed, file_name in enumerate(workers.map(_parse_batch, chunks), start=1):
         serialized_files.append(file_name)
         logger.info('Chunks processed %d', processed)
         logger.info('Data saved to %s', file_name)
@@ -222,9 +220,10 @@ def get_best_spans(tensorizer: Tensorizer, start_logits: List, end_logits: List,
     """
     scores = []
     for (i, s) in enumerate(start_logits):
-        for (j, e) in enumerate(end_logits[i:i + max_answer_length]):
-            scores.append(((i, i + j), s + e))
-
+        scores.extend(
+            ((i, i + j), s + e)
+            for j, e in enumerate(end_logits[i : i + max_answer_length])
+        )
     scores = sorted(scores, key=lambda x: x[1], reverse=True)
 
     chosen_span_intervals = []
@@ -235,9 +234,11 @@ def get_best_spans(tensorizer: Tensorizer, start_logits: List, end_logits: List,
         length = end_index - start_index + 1
         assert length <= max_answer_length
 
-        if any([start_index <= prev_start_index <= prev_end_index <= end_index or
-                prev_start_index <= start_index <= end_index <= prev_end_index
-                for (prev_start_index, prev_end_index) in chosen_span_intervals]):
+        if any(
+            start_index <= prev_start_index <= prev_end_index <= end_index
+            or prev_start_index <= start_index <= end_index <= prev_end_index
+            for (prev_start_index, prev_end_index) in chosen_span_intervals
+        ):
             continue
 
         # extend bpe subtokens to full tokens
@@ -266,7 +267,9 @@ def _select_reader_passages(sample: Dict,
                             ) -> Tuple[List[ReaderPassage], List[ReaderPassage]]:
     answers = sample['answers']
 
-    ctxs = [ReaderPassage(**ctx) for ctx in sample['ctxs']][0:max_retriever_passages]
+    ctxs = [ReaderPassage(**ctx) for ctx in sample['ctxs']][
+        :max_retriever_passages
+    ]
     answers_token_ids = [tensorizer.text_to_tensor(a, add_special_tokens=False) for a in answers]
 
     if is_train_set:
@@ -308,8 +311,11 @@ def _select_reader_passages(sample: Dict,
 
     if not selected_positive_ctxs:  # fallback to positive ctx not from gold pages
         selected_positive_ctxs = list(
-            filter(lambda ctx: ctx.has_answer, [find_answer_spans(ctx) for ctx in positive_samples])
-        )[0:max_positives]
+            filter(
+                lambda ctx: ctx.has_answer,
+                [find_answer_spans(ctx) for ctx in positive_samples],
+            )
+        )[:max_positives]
 
     # optionally include gold passage itself if it is still not in the positives list
     if include_gold_passage and question in gold_passage_map:
@@ -324,18 +330,18 @@ def _select_reader_passages(sample: Dict,
 
     max_negatives = min(max(10 * len(selected_positive_ctxs), max1_negatives),
                         max2_negatives) if is_train_set else DEFAULT_EVAL_PASSAGES
-    negative_samples = negative_samples[0:max_negatives]
+    negative_samples = negative_samples[:max_negatives]
     return selected_positive_ctxs, negative_samples
 
 
 def _find_answer_positions(ctx_ids: T, answer: T) -> List[Tuple[int, int]]:
     c_len = ctx_ids.size(0)
     a_len = answer.size(0)
-    answer_occurences = []
-    for i in range(0, c_len - a_len + 1):
-        if (answer == ctx_ids[i: i + a_len]).all():
-            answer_occurences.append((i, i + a_len - 1))
-    return answer_occurences
+    return [
+        (i, i + a_len - 1)
+        for i in range(0, c_len - a_len + 1)
+        if (answer == ctx_ids[i : i + a_len]).all()
+    ]
 
 
 def _concat_pair(t1: T, t2: T, middle_sep: T = None, tailing_sep: T = None):
@@ -355,7 +361,7 @@ def _get_gold_ctx_dict(file: str) -> Tuple[Dict[str, ReaderPassage], Dict[str, s
     original_questions = {}  # question from tokens -> original question (NQ only)
 
     with open(file, 'r', encoding="utf-8") as f:
-        logger.info('Reading file %s' % file)
+        logger.info(f'Reading file {file}')
         data = json.load(f)['data']
 
     for sample in data:
@@ -378,8 +384,7 @@ def _get_gold_ctx_dict(file: str) -> Tuple[Dict[str, ReaderPassage], Dict[str, s
 
 
 def _is_from_gold_wiki_page(gold_passage_map: Dict[str, ReaderPassage], passage_title: str, question: str):
-    gold_info = gold_passage_map.get(question, None)
-    if gold_info:
+    if gold_info := gold_passage_map.get(question, None):
         return passage_title.lower() == gold_info.title.lower()
     return False
 
@@ -417,7 +422,7 @@ def _preprocess_reader_samples_chunk(samples: List, out_file_prefix: str, gold_p
             logger.info("%d Q: %s POS: %s", i, r.question, r.positive_passages[0].title)
         results.append(r)
 
-    out_file = out_file_prefix + '.' + str(chunk_id) + '.pkl'
+    out_file = f'{out_file_prefix}.{str(chunk_id)}.pkl'
     with open(out_file, mode='wb') as f:
         logger.info('Serialize %d results to %s', len(results), out_file)
         pickle.dump(results, f)

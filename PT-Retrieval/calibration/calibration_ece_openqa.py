@@ -59,7 +59,7 @@ def main(args):
     model_to_load = get_model_obj(encoder)
     logger.info('Loading saved model state ...')
     if args.adapter:
-        adapter_name = model_to_load.load_adapter(args.model_file+".q")
+        adapter_name = model_to_load.load_adapter(f"{args.model_file}.q")
         model_to_load.set_active_adapters(adapter_name)
     else:
         encoder_name = "question_model." 
@@ -85,7 +85,9 @@ def main(args):
     input_paths = glob.glob(ctx_files_pattern)
 
     index_path = "_".join(input_paths[0].split("_")[:-1])
-    if args.save_or_load_index and (os.path.exists(index_path) or os.path.exists(index_path + ".index.dpr")):
+    if args.save_or_load_index and (
+        os.path.exists(index_path) or os.path.exists(f"{index_path}.index.dpr")
+    ):
         retriever.index.deserialize_from(index_path)
     else:
         logger.info('Reading all passages data from files: %s', input_paths)

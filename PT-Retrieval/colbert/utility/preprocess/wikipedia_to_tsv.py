@@ -25,9 +25,7 @@ def main(args):
 
             print_message(f"#> Opening {filename} --- so far collected {len(RawCollection)} pages/passages")
             with open(filename) as f:
-                for line in f:
-                    RawCollection.append(ujson.loads(line))
-
+                RawCollection.extend(ujson.loads(line) for line in f)
     with open(output_path, 'w') as f:
         #line = '\t'.join(map(str, ['id', 'text', 'title'])) + '\n'
         #f.write(line)
@@ -40,12 +38,12 @@ def main(args):
             # Join sentences and clean text
             text = ' '.join(text.split())
 
-            if args.keep_empty_pages or len(text) > 0:
+            if args.keep_empty_pages or text != "":
                 line = '\t'.join(map(str, [PID, text, title])) + '\n'
                 f.write(line)
 
                 PID += 1
-    
+
     print_message("#> All done.")
 
 

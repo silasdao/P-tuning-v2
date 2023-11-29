@@ -31,7 +31,7 @@ class DenseIndexer(object):
     def index_data(self, vector_files: List[str]):
         start_time = time.time()
         buffer = []
-        for i, item in enumerate(iterate_encoded_files(vector_files)):
+        for item in iterate_encoded_files(vector_files):
             db_id, doc_vector = item
             buffer.append((db_id, doc_vector))
             if 0 < self.buffer_size == len(buffer):
@@ -59,8 +59,8 @@ class DenseIndexer(object):
             index_file = os.path.join(file, "index.dpr")
             meta_file = os.path.join(file, "index_meta.dpr")
         else:
-            index_file = file + '.index.dpr'
-            meta_file = file + '.index_meta.dpr'
+            index_file = f'{file}.index.dpr'
+            meta_file = f'{file}.index_meta.dpr'
 
         faiss.write_index(self.index, index_file)
         with open(meta_file, mode='wb') as f:
@@ -73,8 +73,8 @@ class DenseIndexer(object):
             index_file = os.path.join(file, "index.dpr")
             meta_file = os.path.join(file, "index_meta.dpr")
         else:
-            index_file = file + '.index.dpr'
-            meta_file = file + '.index_meta.dpr'
+            index_file = f'{file}.index.dpr'
+            meta_file = f'{file}.index_meta.dpr'
 
         self.index = faiss.read_index(index_file)
         logger.info('Loaded index of type %s and size %d', type(self.index), self.index.ntotal)
@@ -105,8 +105,7 @@ class DenseFlatIndexer(DenseIndexer):
         scores, indexes = self.index.search(query_vectors, top_docs)
         # convert to external ids
         db_ids = [[self.index_id_to_db_id[i] for i in query_top_idxs] for query_top_idxs in indexes]
-        result = [(db_ids[i], scores[i]) for i in range(len(db_ids))]
-        return result
+        return [(db_ids[i], scores[i]) for i in range(len(db_ids))]
 
 
 class DenseHNSWFlatIndexer(DenseIndexer):
@@ -138,11 +137,11 @@ class DenseHNSWFlatIndexer(DenseIndexer):
         :return:
         """
         phi = 0
-        for i, item in enumerate(iterate_encoded_files(vector_files)):
+        for item in iterate_encoded_files(vector_files):
             id, doc_vector = item
             norms = (doc_vector ** 2).sum()
             phi = max(phi, norms)
-        logger.info('HNSWF DotProduct -> L2 space phi={}'.format(phi))
+        logger.info(f'HNSWF DotProduct -> L2 space phi={phi}')
         self.phi = phi
 
     def _index_batch(self, data: List[Tuple[object, np.array]]):
@@ -172,8 +171,7 @@ class DenseHNSWFlatIndexer(DenseIndexer):
         scores, indexes = self.index.search(query_nhsw_vectors, top_docs)
         # convert to external ids
         db_ids = [[self.index_id_to_db_id[i] for i in query_top_idxs] for query_top_idxs in indexes]
-        result = [(db_ids[i], scores[i]) for i in range(len(db_ids))]
-        return result
+        return [(db_ids[i], scores[i]) for i in range(len(db_ids))]
 
     def deserialize_from(self, file: str):
         super(DenseHNSWFlatIndexer, self).deserialize_from(file)
@@ -182,7 +180,7 @@ class DenseHNSWFlatIndexer(DenseIndexer):
 
 
 def iterate_encoded_files(vector_files: list) -> Iterator[Tuple[object, np.array]]:
-    for i, file in enumerate(vector_files):
+    for file in vector_files:
         logger.info('Reading file %s', file)
         with open(file, "rb") as reader:
             doc_vectors = pickle.load(reader)

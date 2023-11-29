@@ -61,6 +61,6 @@ def retrieve(args):
     if args.ranking_dir:
         os.makedirs(args.ranking_dir, exist_ok=True)
         shutil.copyfile(ranking_logger.filename, os.path.join(args.ranking_dir, "ranking.tsv"))
-        print("#> Copied to {}".format(os.path.join(args.ranking_dir, "ranking.tsv")))
+        print(f'#> Copied to {os.path.join(args.ranking_dir, "ranking.tsv")}')
     print("#> Done.")
     print('\n\n')

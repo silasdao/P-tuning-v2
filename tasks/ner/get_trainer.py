@@ -27,7 +27,7 @@ def get_trainer(args):
     add_prefix_space = ADD_PREFIX_SPACE[model_type]
 
     use_fast = USE_FAST[model_type]
-    
+
     tokenizer = AutoTokenizer.from_pretrained(
         model_args.model_name_or_path,
         use_fast=use_fast,
@@ -41,25 +41,15 @@ def get_trainer(args):
         for index in random.sample(range(len(dataset.train_dataset)), 3):
             logger.info(f"Sample {index} of the training set: {dataset.train_dataset[index]}.")
 
-    if data_args.dataset_name == "conll2003":
-        config = AutoConfig.from_pretrained(
-            model_args.model_name_or_path,
-            num_labels=dataset.num_labels,
-            label2id=dataset.label_to_id,
-            id2label={i: l for l, i in dataset.label_to_id.items()},
-            revision=model_args.model_revision,
-        )
-    else:
-        config = AutoConfig.from_pretrained(
-            model_args.model_name_or_path,
-            num_labels=dataset.num_labels,
-            label2id=dataset.label_to_id,
-            id2label={i: l for l, i in dataset.label_to_id.items()},
-            revision=model_args.model_revision,
-        )
-    
+    config = AutoConfig.from_pretrained(
+        model_args.model_name_or_path,
+        num_labels=dataset.num_labels,
+        label2id=dataset.label_to_id,
+        id2label={i: l for l, i in dataset.label_to_id.items()},
+        revision=model_args.model_revision,
+    )
     model = get_model(model_args, TaskType.TOKEN_CLASSIFICATION, config, fix_bert=True)
-    
+
     trainer = ExponentialTrainer(
         model=model,
         args=training_args,

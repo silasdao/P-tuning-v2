@@ -27,13 +27,13 @@ def main(args):
 
     dataset = args.dataset
 
-    data_path = "beir_eval/datasets/%s" % dataset
+    data_path = f"beir_eval/datasets/{dataset}"
 
-    logging.info("evaluating dataset %s..." % dataset)
+    logging.info(f"evaluating dataset {dataset}...")
 
     if not os.path.exists(data_path):
     #### Download NFCorpus dataset and unzip the dataset
-        url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
+        url = f"https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{dataset}.zip"
         out_dir = "beir_eval/datasets"
         util.download_and_unzip(url, out_dir)
         data_path = os.path.join(out_dir, dataset)

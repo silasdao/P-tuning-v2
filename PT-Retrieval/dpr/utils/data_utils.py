@@ -23,13 +23,13 @@ logger = logging.getLogger()
 
 def read_serialized_data_from_files(paths: List[str]) -> List:
     results = []
-    for i, path in enumerate(paths):
+    for path in paths:
         with open(path, "rb") as reader:
             logger.info('Reading file %s', path)
             data = pickle.load(reader)
             results.extend(data)
-            logger.info('Aggregated data size: {}'.format(len(results)))
-    logger.info('Total data size: {}'.format(len(results)))
+            logger.info(f'Aggregated data size: {len(results)}')
+    logger.info(f'Total data size: {len(results)}')
     return results
 
 
@@ -42,12 +42,12 @@ def read_data_from_json_files(paths: List[str], upsample_rates: List = None) -> 
 
     for i, path in enumerate(paths):
         with open(path, 'r', encoding="utf-8") as f:
-            logger.info('Reading file %s' % path)
+            logger.info(f'Reading file {path}')
             data = json.load(f)
             upsample_factor = int(upsample_rates[i])
             data = data * upsample_factor
             results.extend(data)
-            logger.info('Aggregated data size: {}'.format(len(results)))
+            logger.info(f'Aggregated data size: {len(results)}')
     return results
 
 
@@ -111,7 +111,7 @@ class ShardedDataIterator(object):
             items = shard_samples[i:i + self.batch_size]
             if self.strict_batch_size and len(items) < self.batch_size:
                 logger.debug('Extending batch to max size')
-                items.extend(shard_samples[0:self.batch_size - len(items)])
+                items.extend(shard_samples[:self.batch_size - len(items)])
             self.iteration += 1
             yield items
 
@@ -119,10 +119,10 @@ class ShardedDataIterator(object):
         while self.iteration < max_iterations:
             logger.debug('Fulfilling non complete shard='.format(self.shard_id))
             self.iteration += 1
-            batch = shard_samples[0:self.batch_size]
-            yield batch
-
-        logger.debug('Finished iterating, iteration={}, shard={}'.format(self.iteration, self.shard_id))
+            yield shard_samples[:self.batch_size]
+        logger.debug(
+            f'Finished iterating, iteration={self.iteration}, shard={self.shard_id}'
+        )
         # reset the iteration status
         self.iteration = 0
 

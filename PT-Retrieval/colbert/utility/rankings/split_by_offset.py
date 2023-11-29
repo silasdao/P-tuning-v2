@@ -9,7 +9,7 @@ from argparse import ArgumentParser
 
 
 def main(args):
-    output_paths = ['{}.{}'.format(args.ranking, split) for split in args.names]
+    output_paths = [f'{args.ranking}.{split}' for split in args.names]
     assert all(not os.path.exists(path) for path in output_paths), output_paths
 
     output_files = [open(path, 'w') for path in output_paths]
@@ -19,14 +19,14 @@ def main(args):
             qid, pid, rank, *other = line.strip().split('\t')
             qid = int(qid)
             split_output_path = output_files[qid // args.gap - 1]
-            qid = qid % args.gap
+            qid %= args.gap
 
             split_output_path.write('\t'.join([str(x) for x in [qid, pid, rank, *other]]) + '\n')
-        
+
         print(f.name)
-    
+
     _ = [f.close() for f in output_files]
-    
+
     print("#> Done!")
 
 

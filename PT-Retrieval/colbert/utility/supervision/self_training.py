@@ -82,7 +82,9 @@ def main(args):
     print_message("#> Shuffling the triples...")
     random.shuffle(Triples)
 
-    print_message("#> Writing {}M examples to file.".format(len(Triples) / 1000.0 / 1000.0))
+    print_message(
+        f"#> Writing {len(Triples) / 1000.0 / 1000.0}M examples to file."
+    )
 
     with open(args.output, 'w') as f:
         for example in Triples:

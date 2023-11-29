@@ -59,8 +59,7 @@ class DenseRetriever(object):
         self.question_encoder.eval()
 
         with torch.no_grad():
-            for j, batch_start in enumerate(range(0, n, bsz)):
-
+            for batch_start in range(0, n, bsz):
                 batch_token_tensors = [self.tensorizer.text_to_tensor(q) for q in
                                        questions[batch_start:batch_start + bsz]]
 
@@ -172,7 +171,7 @@ def save_results(passages: Dict[object, Tuple[str, str]], questions: List[str], 
 
 
 def iterate_encoded_files(vector_files: list) -> Iterator[Tuple[object, np.array]]:
-    for i, file in enumerate(vector_files):
+    for file in vector_files:
         logger.info('Reading file %s', file)
         with open(file, "rb") as reader:
             doc_vectors = pickle.load(reader)
@@ -200,7 +199,7 @@ def main(args):
     model_to_load = get_model_obj(encoder)
     logger.info('Loading saved model state ...')
     if args.adapter:
-        adapter_name = model_to_load.load_adapter(args.model_file+".q")
+        adapter_name = model_to_load.load_adapter(f"{args.model_file}.q")
         model_to_load.set_active_adapters(adapter_name)
     else:
         encoder_name = "question_model." 
@@ -226,7 +225,9 @@ def main(args):
     input_paths = glob.glob(ctx_files_pattern)
     print(len(input_paths))
     index_path = "_".join(input_paths[0].split("_")[:-1])
-    if args.save_or_load_index and (os.path.exists(index_path) or os.path.exists(index_path + ".index.dpr")):
+    if args.save_or_load_index and (
+        os.path.exists(index_path) or os.path.exists(f"{index_path}.index.dpr")
+    ):
         retriever.index.deserialize_from(index_path)
     else:
         logger.info('Reading all passages data from files: %s', input_paths)

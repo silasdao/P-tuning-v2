@@ -34,7 +34,7 @@ def convert(dataset):
 
         for p in q["positive_ctxs"]:
             pid = p[key[dataset]]
-            qrels.append(f"{qid}\t{pid}\t{1}")
+            qrels.append(f"{qid}\t{pid}\t1")
         queries.append(query)
 
 
@@ -44,7 +44,7 @@ def convert(dataset):
 
     if not os.path.exists(data_dir):
         os.mkdir(data_dir)
-        os.mkdir(data_dir+"/qrels")
+        os.mkdir(f"{data_dir}/qrels")
 
     with open(os.path.join(data_dir, "corpus.jsonl"), 'w') as f:
         for psg in corpus:

@@ -9,6 +9,7 @@
  Command line tool to download various preprocessed data sources & checkpoints for DPR
 """
 
+
 import gzip
 import os
 import pathlib
@@ -26,16 +27,14 @@ RESOURCES_MAP = {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/wikipedia_split/psgs_w100.tsv.gz',
         'original_ext': '.tsv',
         'compressed': True,
-        'desc': 'Entire wikipedia passages set obtain by splitting all pages into 100-word segments (no overlap)'
+        'desc': 'Entire wikipedia passages set obtain by splitting all pages into 100-word segments (no overlap)',
     },
-
     'compressed-data.wikipedia_split.psgs_w100': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/wikipedia_split/psgs_w100.tsv.gz',
         'original_ext': '.tsv.gz',
         'compressed': False,
-        'desc': 'Entire wikipedia passages set obtain by splitting all pages into 100-word segments (no overlap)'
+        'desc': 'Entire wikipedia passages set obtain by splitting all pages into 100-word segments (no overlap)',
     },
-
     'data.retriever.nq-dev': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/data/retriever/biencoder-nq-dev.json.gz',
         'original_ext': '.json',
@@ -43,7 +42,6 @@ RESOURCES_MAP = {
         'desc': 'NQ dev subset with passages pools for the Retriever train time validation',
         'license_files': NQ_LICENSE_FILES,
     },
-
     'data.retriever.nq-train': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/data/retriever/biencoder-nq-train.json.gz',
         'original_ext': '.json',
@@ -51,33 +49,29 @@ RESOURCES_MAP = {
         'desc': 'NQ train subset with passages pools for the Retriever training',
         'license_files': NQ_LICENSE_FILES,
     },
-
     'data.retriever.trivia-dev': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/data/retriever/biencoder-trivia-dev.json.gz',
         'original_ext': '.json',
         'compressed': True,
-        'desc': 'TriviaQA dev subset with passages pools for the Retriever train time validation'
+        'desc': 'TriviaQA dev subset with passages pools for the Retriever train time validation',
     },
-
     'data.retriever.trivia-train': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/data/retriever/biencoder-trivia-train.json.gz',
         'original_ext': '.json',
         'compressed': True,
-        'desc': 'TriviaQA train subset with passages pools for the Retriever training'
+        'desc': 'TriviaQA train subset with passages pools for the Retriever training',
     },
-
     'data.retriever.squad1-train': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/data/retriever/biencoder-squad1-train.json.gz',
         'original_ext': '.json',
         'compressed': True,
-        'desc': 'SQUAD 1.1 train subset with passages pools for the Retriever training'
+        'desc': 'SQUAD 1.1 train subset with passages pools for the Retriever training',
     },
-
     'data.retriever.squad1-dev': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/data/retriever/biencoder-squad1-dev.json.gz',
         'original_ext': '.json',
         'compressed': True,
-        'desc': 'SQUAD 1.1 dev subset with passages pools for the Retriever train time validation'
+        'desc': 'SQUAD 1.1 dev subset with passages pools for the Retriever train time validation',
     },
     "data.retriever.qas.squad1-test": {
         "s3_url": "https://dl.fbaipublicfiles.com/dpr/data/retriever/squad1-test.qa.csv",
@@ -92,7 +86,6 @@ RESOURCES_MAP = {
         'desc': 'NQ dev subset for Retriever validation and IR results generation',
         'license_files': NQ_LICENSE_FILES,
     },
-
     'data.retriever.qas.nq-test': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/data/retriever/nq-test.qa.csv',
         'original_ext': '.csv',
@@ -100,7 +93,6 @@ RESOURCES_MAP = {
         'desc': 'NQ test subset for Retriever validation and IR results generation',
         'license_files': NQ_LICENSE_FILES,
     },
-
     'data.retriever.qas.nq-train': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/data/retriever/nq-train.qa.csv',
         'original_ext': '.csv',
@@ -108,29 +100,24 @@ RESOURCES_MAP = {
         'desc': 'NQ train subset for Retriever validation and IR results generation',
         'license_files': NQ_LICENSE_FILES,
     },
-
-    #
     'data.retriever.qas.trivia-dev': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/data/retriever/trivia-dev.qa.csv.gz',
         'original_ext': '.csv',
         'compressed': True,
-        'desc': 'Trivia dev subset for Retriever validation and IR results generation'
+        'desc': 'Trivia dev subset for Retriever validation and IR results generation',
     },
-
     'data.retriever.qas.trivia-test': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/data/retriever/trivia-test.qa.csv.gz',
         'original_ext': '.csv',
         'compressed': True,
-        'desc': 'Trivia test subset for Retriever validation and IR results generation'
+        'desc': 'Trivia test subset for Retriever validation and IR results generation',
     },
-
     'data.retriever.qas.trivia-train': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/data/retriever/trivia-train.qa.csv.gz',
         'original_ext': '.csv',
         'compressed': True,
-        'desc': 'Trivia train subset for Retriever validation and IR results generation'
+        'desc': 'Trivia train subset for Retriever validation and IR results generation',
     },
-
     'data.gold_passages_info.nq_train': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/data/nq_gold_info/nq-train_gold_info.json.gz',
         'original_ext': '.json',
@@ -138,7 +125,6 @@ RESOURCES_MAP = {
         'desc': 'Original NQ (our train subset) gold positive passages and alternative question tokenization',
         'license_files': NQ_LICENSE_FILES,
     },
-
     'data.gold_passages_info.nq_dev': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/data/nq_gold_info/nq-dev_gold_info.json.gz',
         'original_ext': '.json',
@@ -146,46 +132,42 @@ RESOURCES_MAP = {
         'desc': 'Original NQ (our dev subset) gold positive passages and alternative question tokenization',
         'license_files': NQ_LICENSE_FILES,
     },
-
     'data.gold_passages_info.nq_test': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/data/nq_gold_info/nq-test_gold_info.json.gz',
         'original_ext': '.json',
         'compressed': True,
         'desc': 'Original NQ (our test, original dev subset) gold positive passages and alternative question '
-                'tokenization',
+        'tokenization',
         'license_files': NQ_LICENSE_FILES,
     },
-
     'pretrained.fairseq.roberta-base.dict': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/pretrained/fairseq/roberta/dict.txt',
         'original_ext': '.txt',
         'compressed': False,
-        'desc': 'Dictionary for pretrained fairseq roberta model'
+        'desc': 'Dictionary for pretrained fairseq roberta model',
     },
-
     'pretrained.fairseq.roberta-base.model': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/pretrained/fairseq/roberta/model.pt',
         'original_ext': '.pt',
         'compressed': False,
-        'desc': 'Weights for pretrained fairseq roberta base model'
+        'desc': 'Weights for pretrained fairseq roberta base model',
     },
-
     'pretrained.pytext.bert-base.model': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/pretrained/pytext/bert/bert-base-uncased.pt',
         'original_ext': '.pt',
         'compressed': False,
-        'desc': 'Weights for pretrained pytext bert base model'
+        'desc': 'Weights for pretrained pytext bert base model',
     },
-
     'data.retriever_results.nq.single.wikipedia_passages': {
-        's3_url': ['https://dl.fbaipublicfiles.com/dpr/data/wiki_encoded/single/nq/wiki_passages_{}'.format(i) for i in
-                   range(50)],
+        's3_url': [
+            f'https://dl.fbaipublicfiles.com/dpr/data/wiki_encoded/single/nq/wiki_passages_{i}'
+            for i in range(50)
+        ],
         'original_ext': '.pkl',
         'compressed': False,
         'desc': 'Encoded wikipedia files using a biencoder checkpoint('
-                'checkpoint.retriever.single.nq.bert-base-encoder) trained on NQ dataset '
+        'checkpoint.retriever.single.nq.bert-base-encoder) trained on NQ dataset ',
     },
-
     'data.retriever_results.nq.single.test': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/data/retriever_results/single/nq-test.json.gz',
         'original_ext': '.json',
@@ -207,29 +189,28 @@ RESOURCES_MAP = {
         'desc': 'Retrieval results of NQ train dataset for the encoder trained on NQ',
         'license_files': NQ_LICENSE_FILES,
     },
-
     'checkpoint.retriever.single.nq.bert-base-encoder': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/checkpoint/retriever/single/nq/hf_bert_base.cp',
         'original_ext': '.cp',
         'compressed': False,
-        'desc': 'Biencoder weights trained on NQ data and HF bert-base-uncased model'
+        'desc': 'Biencoder weights trained on NQ data and HF bert-base-uncased model',
     },
-
     'checkpoint.retriever.multiset.bert-base-encoder': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/checkpoint/retriver/multiset/hf_bert_base.cp',
         'original_ext': '.cp',
         'compressed': False,
-        'desc': 'Biencoder weights trained on multi set data and HF bert-base-uncased model'
+        'desc': 'Biencoder weights trained on multi set data and HF bert-base-uncased model',
     },
-
     'data.reader.nq.single.train': {
-        's3_url': ['https://dl.fbaipublicfiles.com/dpr/data/reader/nq/single/train.{}.pkl'.format(i) for i in range(8)],
+        's3_url': [
+            f'https://dl.fbaipublicfiles.com/dpr/data/reader/nq/single/train.{i}.pkl'
+            for i in range(8)
+        ],
         'original_ext': '.pkl',
         'compressed': False,
         'desc': 'Reader model NQ train dataset input data preprocessed from retriever results (also trained on NQ)',
         'license_files': NQ_LICENSE_FILES,
     },
-
     'data.reader.nq.single.dev': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/data/reader/nq/single/dev.0.pkl',
         'original_ext': '.pkl',
@@ -237,7 +218,6 @@ RESOURCES_MAP = {
         'desc': 'Reader model NQ dev dataset input data preprocessed from retriever results (also trained on NQ)',
         'license_files': NQ_LICENSE_FILES,
     },
-
     'data.reader.nq.single.test': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/data/reader/nq/single/test.0.pkl',
         'original_ext': '.pkl',
@@ -245,104 +225,97 @@ RESOURCES_MAP = {
         'desc': 'Reader model NQ test dataset input data preprocessed from retriever results (also trained on NQ)',
         'license_files': NQ_LICENSE_FILES,
     },
-
     'data.reader.trivia.multi-hybrid.train': {
-        's3_url': ['https://dl.fbaipublicfiles.com/dpr/data/reader/trivia/multi-hybrid/train.{}.pkl'.format(i) for i in
-                   range(8)],
+        's3_url': [
+            f'https://dl.fbaipublicfiles.com/dpr/data/reader/trivia/multi-hybrid/train.{i}.pkl'
+            for i in range(8)
+        ],
         'original_ext': '.pkl',
         'compressed': False,
         'desc': 'Reader model Trivia train dataset input data preprocessed from hybrid retriever results '
-                '(where dense part is trained on multiset)'
+        '(where dense part is trained on multiset)',
     },
-
     'data.reader.trivia.multi-hybrid.dev': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/data/reader/trivia/multi-hybrid/dev.0.pkl',
         'original_ext': '.pkl',
         'compressed': False,
         'desc': 'Reader model Trivia dev dataset input data preprocessed from hybrid retriever results '
-                '(where dense part is trained on multiset)'
+        '(where dense part is trained on multiset)',
     },
-
     'data.reader.trivia.multi-hybrid.test': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/data/reader/trivia/multi-hybrid/test.0.pkl',
         'original_ext': '.pkl',
         'compressed': False,
         'desc': 'Reader model Trivia test dataset input data preprocessed from hybrid retriever results '
-                '(where dense part is trained on multiset)'
+        '(where dense part is trained on multiset)',
     },
-
     'checkpoint.reader.nq-single.hf-bert-base': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/checkpoint/reader/nq-single/hf_bert_base.cp',
         'original_ext': '.cp',
         'compressed': False,
-        'desc': 'Reader weights trained on NQ-single retriever results and HF bert-base-uncased model'
+        'desc': 'Reader weights trained on NQ-single retriever results and HF bert-base-uncased model',
     },
-
     'checkpoint.reader.nq-trivia-hybrid.hf-bert-base': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/checkpoint/reader/nq-trivia-hybrid/hf_bert_base.cp',
         'original_ext': '.cp',
         'compressed': False,
-        'desc': 'Reader weights trained on Trivia multi hybrid retriever results and HF bert-base-uncased model'
+        'desc': 'Reader weights trained on Trivia multi hybrid retriever results and HF bert-base-uncased model',
     },
-
-    # extra checkpoints for EfficientQA competition
     'checkpoint.reader.nq-single-subset.hf-bert-base': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/checkpoint/reader/nq-single-seen_only/hf_bert_base.cp',
         'original_ext': '.cp',
         'compressed': False,
-        'desc': 'Reader weights trained on NQ-single retriever results and HF bert-base-uncased model, when only Wikipedia pages seen during training are considered'
+        'desc': 'Reader weights trained on NQ-single retriever results and HF bert-base-uncased model, when only Wikipedia pages seen during training are considered',
     },
     'checkpoint.reader.nq-tfidf.hf-bert-base': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/checkpoint/reader/nq-drqa/hf_bert_base.cp',
         'original_ext': '.cp',
         'compressed': False,
-        'desc': 'Reader weights trained on TFIDF results and HF bert-base-uncased model'
+        'desc': 'Reader weights trained on TFIDF results and HF bert-base-uncased model',
     },
     'checkpoint.reader.nq-tfidf-subset.hf-bert-base': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/checkpoint/reader/nq-drqa-seen_only/hf_bert_base.cp',
         'original_ext': '.cp',
         'compressed': False,
-        'desc': 'Reader weights trained on TFIDF results and HF bert-base-uncased model, when only Wikipedia pages seen during training are considered'
+        'desc': 'Reader weights trained on TFIDF results and HF bert-base-uncased model, when only Wikipedia pages seen during training are considered',
     },
-
-    # retrieval indexes
     'indexes.single.nq.full.index': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/checkpoint/indexes/single/nq/full.index.dpr',
         'original_ext': '.dpr',
         'compressed': False,
-        'desc': 'DPR index on NQ-single retriever'
+        'desc': 'DPR index on NQ-single retriever',
     },
     'indexes.single.nq.full.index_meta': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/checkpoint/indexes/single/nq/full.index_meta.dpr',
         'original_ext': '.dpr',
         'compressed': False,
-        'desc': 'DPR index on NQ-single retriever (metadata)'
+        'desc': 'DPR index on NQ-single retriever (metadata)',
     },
     'indexes.single.nq.subset.index': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/checkpoint/indexes/single/nq/seen_only.index.dpr',
         'original_ext': '.dpr',
         'compressed': False,
-        'desc': 'DPR index on NQ-single retriever when only Wikipedia pages seen during training are considered'
+        'desc': 'DPR index on NQ-single retriever when only Wikipedia pages seen during training are considered',
     },
     'indexes.single.nq.subset.index_meta': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/checkpoint/indexes/single/nq/seen_only.index_meta.dpr',
         'original_ext': '.dpr',
         'compressed': False,
-        'desc': 'DPR index on NQ-single retriever when only Wikipedia pages seen during training are considered (metadata)'
+        'desc': 'DPR index on NQ-single retriever when only Wikipedia pages seen during training are considered (metadata)',
     },
     'indexes.tfidf.nq.full': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/checkpoint/indexes/drqa/nq/full-tfidf.npz',
         'original_ext': '.npz',
         'compressed': False,
-        'desc': 'TFIDF index'
+        'desc': 'TFIDF index',
     },
     'indexes.tfidf.nq.subset': {
         's3_url': 'https://dl.fbaipublicfiles.com/dpr/checkpoint/indexes/drqa/nq/seen_only-tfidf.npz',
         'original_ext': '.npz',
         'compressed': False,
-        'desc': 'TFIDF index when only Wikipedia pages seen during training are considered'
+        'desc': 'TFIDF index when only Wikipedia pages seen during training are considered',
     },
-     "data.retriever.webq-train": {
+    "data.retriever.webq-train": {
         "s3_url": "https://dl.fbaipublicfiles.com/dpr/data/retriever/biencoder-webquestions-train.json.gz",
         "original_ext": ".json",
         "compressed": True,
@@ -392,9 +365,8 @@ def unpack(gzip_file: str, out_file: str):
     input = gzip.GzipFile(gzip_file, 'rb')
     s = input.read()
     input.close()
-    output = open(out_file, 'wb')
-    output.write(s)
-    output.close()
+    with open(out_file, 'wb') as output:
+        output.write(s)
     print('Saved to ', out_file)
 
 
@@ -440,9 +412,9 @@ def download_file(s3_url: str, out_dir: str, file_name: str):
 
 def download(resource_key: str, out_dir: str = None):
     if resource_key not in RESOURCES_MAP:
-        # match by prefix
-        resources = [k for k in RESOURCES_MAP.keys() if k.startswith(resource_key)]
-        if resources:
+        if resources := [
+            k for k in RESOURCES_MAP.keys() if k.startswith(resource_key)
+        ]:
             for key in resources:
                 download(key, out_dir)
         else:
@@ -455,11 +427,13 @@ def download(resource_key: str, out_dir: str = None):
     save_root_dir = None
     if isinstance(s3_url, list):
         for i, url in enumerate(s3_url):
-            save_root_dir = download_resource(url,
-                                              download_info['original_ext'],
-                                              download_info['compressed'],
-                                              '{}_{}'.format(resource_key, i),
-                                              out_dir)
+            save_root_dir = download_resource(
+                url,
+                download_info['original_ext'],
+                download_info['compressed'],
+                f'{resource_key}_{i}',
+                out_dir,
+            )
     else:
         save_root_dir = download_resource(s3_url,
                                           download_info['original_ext'],
@@ -488,7 +462,7 @@ def main():
     else:
         print('Please specify resource value. Possible options are:')
         for k, v in RESOURCES_MAP.items():
-            print('Resource key={}  description: {}'.format(k, v['desc']))
+            print(f"Resource key={k}  description: {v['desc']}")
 
 
 if __name__ == '__main__':

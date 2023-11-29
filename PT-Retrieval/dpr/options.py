@@ -126,10 +126,7 @@ def get_encoder_params_state(args):
     """
     params_to_save = get_encoder_checkpoint_params_names()
 
-    r = {}
-    for param in params_to_save:
-        r[param] = getattr(args, param)
-    return r
+    return {param: getattr(args, param) for param in params_to_save}
 
 
 def set_encoder_params_from_state(state, args):
@@ -184,6 +181,6 @@ def setup_args_gpu(args):
 def print_args(args):
     logger.info(" **************** CONFIGURATION **************** ")
     for key, val in sorted(vars(args).items()):
-        keystr = "{}".format(key) + (" " * (30 - len(key)))
+        keystr = f"{key}" + " " * (30 - len(key))
         logger.info("%s -->   %s", keystr, val)
     logger.info(" **************** CONFIGURATION **************** ")

@@ -14,7 +14,7 @@ print(BASE_DIR)
 
 from dpr.options import add_encoder_params, setup_args_gpu, \
     add_tokenizer_params, add_cuda_params, add_tuning_params
-    
+
 import argparse
 import logging
 import pathlib, os
@@ -35,7 +35,7 @@ add_cuda_params(parser)
 add_tuning_params(parser)
 
 parser.add_argument('--batch_size', type=int, default=32, help="Batch size for the passage encoder forward pass")
-parser.add_argument('--dataset', type=str) 
+parser.add_argument('--dataset', type=str)
 parser.add_argument('--split', type=str, default="text") 
 
 args = parser.parse_args()
@@ -51,11 +51,11 @@ dataset = args.dataset
 
 data_path = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets", dataset)
 
-logging.info("evaluating dataset %s..." % dataset)
+logging.info(f"evaluating dataset {dataset}...")
 logging.info(data_path)
 if not os.path.exists(data_path):
     #### Download NFCorpus dataset and unzip the dataset
-    url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
+    url = f"https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{dataset}.zip"
     out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
     util.download_and_unzip(url, out_dir)
     data_path = os.path.join(out_dir, dataset)
@@ -74,7 +74,7 @@ results = retriever.retrieve(corpus, queries)
 
 #### Evaluate your retrieval using NDCG@k, MAP@K ...
 
-logging.info("Retriever evaluation for k in: {}".format(retriever.k_values))
+logging.info(f"Retriever evaluation for k in: {retriever.k_values}")
 ndcg, _map, recall, precision = retriever.evaluate(qrels, results, retriever.k_values)
 
 #### Print top-k documents retrieved ####

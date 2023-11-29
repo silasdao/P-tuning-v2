@@ -66,9 +66,12 @@ def sample_for_query(qid, ranking, args_positives, depth, permissive, biased):
         negatives_ = negatives[neg_start:]
 
         biased_ = biased if neg_start == 0 else None
-        for neg in sample_negatives(negatives_, num_sampled, biased=biased_):
-            triples.append((qid, pos, neg))
-
+        triples.extend(
+            (qid, pos, neg)
+            for neg in sample_negatives(
+                negatives_, num_sampled, biased=biased_
+            )
+        )
     return triples
 
 
@@ -103,7 +106,9 @@ def main(args):
     print_message("#> Shuffling the triples...")
     random.shuffle(Triples)
 
-    print_message("#> Writing {}M examples to file.".format(len(Triples) / 1000.0 / 1000.0))
+    print_message(
+        f"#> Writing {len(Triples) / 1000.0 / 1000.0}M examples to file."
+    )
 
     with open(args.output, 'w') as f:
         for example in Triples:

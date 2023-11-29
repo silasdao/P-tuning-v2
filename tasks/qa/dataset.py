@@ -83,7 +83,7 @@ class SQuAD:
         for i, offsets in enumerate(offset_mapping):
             input_ids = tokenized['input_ids'][i]
             cls_index = input_ids.index(self.tokenizer.cls_token_id)
-            
+
             sequence_ids = tokenized.sequence_ids(i)
             sample_index = sample_maping[i]
             answers = examples['answers'][sample_index]
@@ -105,7 +105,10 @@ class SQuAD:
 
                 # Detect if the answer is out of the span 
                 # (in which case this feature is labeled with the CLS index).
-                if not (offsets[token_start_index][0] <= start_char and offsets[token_end_index][1] >= end_char):
+                if (
+                    offsets[token_start_index][0] > start_char
+                    or offsets[token_end_index][1] < end_char
+                ):
                     tokenized["start_positions"].append(cls_index)
                     tokenized["end_positions"].append(cls_index)
                 else:
@@ -117,7 +120,7 @@ class SQuAD:
                     while offsets[token_end_index][1] >= end_char:
                         token_end_index -= 1
                     tokenized["end_positions"].append(token_end_index + 1)
-            
+
         return tokenized
 
     def prepare_eval_dataset(self, examples):

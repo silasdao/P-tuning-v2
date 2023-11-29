@@ -72,8 +72,8 @@ class ModelInference():
 
 
 def _stack_3D_tensors(groups):
-    bsize = sum([x.size(0) for x in groups])
-    maxlen = max([x.size(1) for x in groups])
+    bsize = sum(x.size(0) for x in groups)
+    maxlen = max(x.size(1) for x in groups)
     hdim = groups[0].size(2)
 
     output = torch.zeros(bsize, maxlen, hdim, device=groups[0].device, dtype=groups[0].dtype)

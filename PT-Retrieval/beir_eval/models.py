@@ -30,13 +30,13 @@ class DPRForBeir():
                                                 args.fp16_opt_level)
 
         self.device = args.device
-        
+
         self.tensorizer = tensorizer
 
         model_to_load = get_model_obj(encoder).question_model
         model_to_load.eval()
         if args.adapter:
-            adapter_name = model_to_load.load_adapter(args.model_file+".q")
+            adapter_name = model_to_load.load_adapter(f"{args.model_file}.q")
             model_to_load.set_active_adapters(adapter_name)
         else:
             encoder_name = "question_model."
@@ -47,12 +47,12 @@ class DPRForBeir():
                         key.startswith(encoder_name)}
             model_to_load.load_state_dict(q_state, strict=not args.prefix and not args.prompt)
         self.q_model = model_to_load
-        
+
 
         model_to_load = get_model_obj(encoder).ctx_model
         model_to_load.eval()
         if args.adapter:
-            adapter_name = model_to_load.load_adapter(args.model_file+".ctx")
+            adapter_name = model_to_load.load_adapter(f"{args.model_file}.ctx")
             model_to_load.set_active_adapters(adapter_name)
         else:
             encoder_name = "ctx_model."
@@ -77,8 +77,7 @@ class DPRForBeir():
 
                 query_embeddings.extend(out.cpu())
 
-        result = torch.stack(query_embeddings)
-        return result
+        return torch.stack(query_embeddings)
         
     def encode_corpus(self, corpus: List[Dict[str, str]], batch_size: int = 8, **kwargs) -> torch.Tensor:
         
@@ -95,6 +94,5 @@ class DPRForBeir():
                 out = out.cpu()
                 corpus_embeddings.extend([out[i].view(-1) for i in range(out.size(0))])  
 
-        
-        result = torch.stack(corpus_embeddings)
-        return result
+
+        return torch.stack(corpus_embeddings)

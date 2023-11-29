@@ -91,7 +91,7 @@ def calculate_erce(qrels, results, args):
     y_true = []
     y_prob = []
     for qid in questions:
-        rels = set([k for k, v in qrels[qid].items() if v])
+        rels = {k for k, v in qrels[qid].items() if v}
         sorted_result = sorted(results[qid].items(), key=lambda x: x[1], reverse=True)
         pos_scores = []
         neg_scores = []
@@ -101,7 +101,7 @@ def calculate_erce(qrels, results, args):
                 pos_scores.append(score)
             else:
                 neg_scores.append(score)
-        if len(pos_scores) == 0:
+        if not pos_scores:
             for pid, score in sorted_result:
                 if pid in rels:
                     pos_scores.append(score)
@@ -115,7 +115,7 @@ def calculate_erce(qrels, results, args):
         # for pid, score in sorted_result[:args.n_erce_docs]:
         #     if pid not in rels:
         #         neg_scores.append(score)
-        
+
         for pscore in pos_scores:
             for nscore in neg_scores:
                 pos_score, neg_score = softmax([pscore, nscore])
@@ -132,10 +132,10 @@ def plot_calibration_curve(qrels, results, args):
     y_prob = []
 
     for qid in questions:
-        rels = set([k for k, v in qrels[qid].items() if v])
+        rels = {k for k, v in qrels[qid].items() if v}
         result = set(results[qid].keys())
         pos_docs = list(result.intersection(rels))
-        if len(pos_docs) == 0:
+        if not pos_docs:
             continue
         neg_docs = list(result - rels)
 

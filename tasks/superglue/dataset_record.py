@@ -68,7 +68,7 @@ class DataCollatorForMultipleChoice(DataCollatorMixin):
 
         def pad_choice_dim(data, choice_num):
             if len(data) < choice_num:
-                data = np.concatenate([data] + [data[0:1]] * (choice_num - len(data)))
+                data = np.concatenate([data] + [data[:1]] * (choice_num - len(data)))
             return data
 
         for i, sample in enumerate(batch):
@@ -98,12 +98,7 @@ class SuperGlueDatasetForRecord(SuperGlueDataset):
             self.num_labels = 1
 
         # Padding strategy
-        if data_args.pad_to_max_length:
-            self.padding = "max_length"
-        else:
-            # We will pad later, dynamically at batch creation, to the max sequence length in each batch
-            self.padding = False
-
+        self.padding = "max_length" if data_args.pad_to_max_length else False
         # Some models have set the order of the labels to use, so let's make sure we do use it.
         self.label_to_id = None
 
@@ -134,7 +129,7 @@ class SuperGlueDatasetForRecord(SuperGlueDataset):
                 remove_columns=raw_datasets["train"].column_names,
                 desc="Running tokenizer on train dataset",
             )
-            
+
         if training_args.do_eval:
             self.eval_dataset = raw_datasets["validation"]
             if data_args.max_eval_samples is not None:
@@ -147,7 +142,7 @@ class SuperGlueDatasetForRecord(SuperGlueDataset):
                 remove_columns=raw_datasets["train"].column_names,
                 desc="Running tokenizer on validation dataset",
             )
-            
+
         self.metric = load_metric("super_glue", data_args.dataset_name)
 
         self.data_collator = DataCollatorForMultipleChoice(tokenizer)
@@ -156,44 +151,43 @@ class SuperGlueDatasetForRecord(SuperGlueDataset):
         # elif training_args.fp16:
         #     self.data_collator = DataCollatorWithPadding(tokenizer, pad_to_multiple_of=8)
     def preprocess_function(self, examples):
-        results = {
-            "input_ids": list(),
-            "attention_mask": list(),
-            "token_type_ids": list(),
-            "label": list()
-        }
         for passage, query, entities, answers in zip(examples["passage"], examples["query"], examples["entities"], examples["answers"]):
             passage = passage.replace("@highlight\n", "- ")
 
             input_ids = []
             attention_mask = []
             token_type_ids = []
-            
+
             for _, ent in enumerate(entities):
                 question = query.replace("@placeholder", ent)
                 result = self.tokenizer(passage, question, padding=self.padding, max_length=self.max_seq_length, truncation=True)
-                
+
                 input_ids.append(result["input_ids"])
                 attention_mask.append(result["attention_mask"])
                 if "token_type_ids" in result: token_type_ids.append(result["token_type_ids"])
                 label = 1 if ent in answers else 0
-            
+
             result["label"].append()
 
-        return results
+        return {
+            "input_ids": [],
+            "attention_mask": [],
+            "token_type_ids": [],
+            "label": [],
+        }
 
 
     def prepare_train_dataset(self, examples, max_train_candidates_per_question=10):
         entity_shuffler = random.Random(44)
         results = {
-            "input_ids": list(),
-            "attention_mask": list(),
-            "token_type_ids": list(),
-            "label": list()
+            "input_ids": [],
+            "attention_mask": [],
+            "token_type_ids": [],
+            "label": [],
         }
         for passage, query, entities, answers in zip(examples["passage"], examples["query"], examples["entities"], examples["answers"]):
             passage = passage.replace("@highlight\n", "- ")
-            
+
             for answer in answers:
                 input_ids = []
                 attention_mask = []
@@ -215,7 +209,7 @@ class SuperGlueDatasetForRecord(SuperGlueDataset):
 
                 results["input_ids"].append(input_ids)
                 results["attention_mask"].append(attention_mask)
-                if len(token_type_ids) > 0: results["token_type_ids"].append(token_type_ids)
+                if token_type_ids: results["token_type_ids"].append(token_type_ids)
                 results["label"].append(0)
 
         return results
@@ -224,10 +218,10 @@ class SuperGlueDatasetForRecord(SuperGlueDataset):
     def prepare_eval_dataset(self, examples):
 
         results = {
-            "input_ids": list(),
-            "attention_mask": list(),
-            "token_type_ids": list(),
-            "label": list()
+            "input_ids": [],
+            "attention_mask": [],
+            "token_type_ids": [],
+            "label": [],
         }
         for passage, query, entities, answers in zip(examples["passage"], examples["query"], examples["entities"], examples["answers"]):
             passage = passage.replace("@highlight\n", "- ")
@@ -245,7 +239,7 @@ class SuperGlueDatasetForRecord(SuperGlueDataset):
 
                 results["input_ids"].append(input_ids)
                 results["attention_mask"].append(attention_mask)
-                if len(token_type_ids) > 0: results["token_type_ids"].append(token_type_ids)
+                if token_type_ids: results["token_type_ids"].append(token_type_ids)
                 results["label"].append(0)
 
         return results

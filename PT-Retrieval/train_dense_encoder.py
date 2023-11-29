@@ -100,12 +100,12 @@ class BiEncoderTrainer(object):
                 else:
                     upsample_rates.append(1)
             print("upsample ratse =", upsample_rates)
-            
+
         data = read_data_from_json_files(data_files, upsample_rates)
-    
+
         # filter those without positive ctx
         data = [r for r in data if len(r['positive_ctxs']) > 0]
-        logger.info('Total cleaned data size: {}'.format(len(data)))
+        logger.info(f'Total cleaned data size: {len(data)}')
 
         return ShardedDataIterator(data, shard_id=self.shard_id,
                                    num_shards=self.distributed_factor,
@@ -159,15 +159,15 @@ class BiEncoderTrainer(object):
         if epoch == args.val_av_rank_start_epoch:
             self.best_validation_result = None
 
-        if epoch >= args.val_av_rank_start_epoch:
-            validation_loss = self.validate_average_rank()
-        else:
-            validation_loss = self.validate_nll()
-
         if save_cp:
+            validation_loss = (
+                self.validate_average_rank()
+                if epoch >= args.val_av_rank_start_epoch
+                else self.validate_nll()
+            )
             cp_name = self._save_checkpoint(scheduler, epoch, iteration)
             logger.info('Saved checkpoint to %s', cp_name)
-            
+
             if validation_loss < (self.best_validation_result or validation_loss + 1):
                 self.best_validation_result = validation_loss
                 self.best_cp_name = cp_name
@@ -390,17 +390,20 @@ class BiEncoderTrainer(object):
     def _save_checkpoint(self, scheduler, epoch: int, offset: int) -> str:
         args = self.args
         model_to_save = get_model_obj(self.biencoder)
-        cp = os.path.join(args.output_dir,
-                          args.checkpoint_file_name + '.' + str(epoch) + ('.' + str(offset) if offset > 0 else ''))
+        cp = os.path.join(
+            args.output_dir,
+            f'{args.checkpoint_file_name}.{epoch}'
+            + (f'.{offset}' if offset > 0 else ''),
+        )
 
         meta_params = get_encoder_params_state(args)
 
         if self.prefix or self.prompt:
             model_dict = {key: value for (key, value) in model_to_save.state_dict().items() if "prefix_encoder" in key}
         elif self.adapter:
-            model_to_save.question_model.save_adapter(cp+".q", "adapter")
-            model_to_save.ctx_model.save_adapter(cp+".ctx", "adapter")
-            return cp 
+            model_to_save.question_model.save_adapter(f"{cp}.q", "adapter")
+            model_to_save.ctx_model.save_adapter(f"{cp}.ctx", "adapter")
+            return cp
         else:
             model_dict = model_to_save.state_dict()
 
@@ -428,16 +431,18 @@ class BiEncoderTrainer(object):
         model_to_load = get_model_obj(self.biencoder)
         logger.info('Loading saved model state ...')
         if self.adapter:
-            adapter_name = model_to_load.question_model.load_adapter(self.args.model_file+".q")
+            adapter_name = model_to_load.question_model.load_adapter(
+                f"{self.args.model_file}.q"
+            )
             model_to_load.question_model.set_active_adapters(adapter_name)
             return
         else:
             model_to_load.load_state_dict(saved_state.model_dict, strict=not self.prefix and not self.prompt) 
-        
+
         if saved_state.optimizer_dict:
             logger.info('Loading saved optimizer state ...')
             self.optimizer.load_state_dict(saved_state.optimizer_dict)
-            
+
         if saved_state.scheduler_dict:
             self.scheduler_state = saved_state.scheduler_dict
 
@@ -587,8 +592,9 @@ def main():
     args = parser.parse_args()
 
     if args.gradient_accumulation_steps < 1:
-        raise ValueError("Invalid gradient_accumulation_steps parameter: {}, should be >= 1".format(
-            args.gradient_accumulation_steps))
+        raise ValueError(
+            f"Invalid gradient_accumulation_steps parameter: {args.gradient_accumulation_steps}, should be >= 1"
+        )
 
     if args.output_dir is not None:
         os.makedirs(args.output_dir, exist_ok=True)

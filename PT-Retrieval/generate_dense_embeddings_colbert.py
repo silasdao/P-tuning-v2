@@ -58,7 +58,10 @@ def gen_ctx_vectors(ctx_rows: List[Tuple[object, str, str]], inference,
     total = 0
     results = []
     for j, batch_start in tqdm(enumerate(range(0, n, bsz)), total=round(n/bsz)):
-        batch = [ctx[2] + '. ' + ctx[1] for ctx in ctx_rows[batch_start:batch_start + bsz]]
+        batch = [
+            f'{ctx[2]}. {ctx[1]}'
+            for ctx in ctx_rows[batch_start : batch_start + bsz]
+        ]
         embs = inference.docFromText(batch, bsize=32, keep_dims=True)
         print(embs.shape)
         assert len(embs) == len(batch)
@@ -102,9 +105,9 @@ def main(args):
 
     data = gen_ctx_vectors(rows, inference, args, True) 
 
-    file = args.out_file + '-' + str(args.shard_id) + '.pkl'
+    file = f'{args.out_file}-{str(args.shard_id)}.pkl'
     pathlib.Path(os.path.dirname(file)).mkdir(parents=True, exist_ok=True)
-    logger.info('Writing results to %s' % file)
+    logger.info(f'Writing results to {file}')
     with open(file, mode='wb') as f:
         pickle.dump(data, f)
 

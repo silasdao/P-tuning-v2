@@ -17,13 +17,12 @@ csv.field_size_limit(sys.maxsize)
 
 def tsv_reader(input_filepath):
     reader = csv.reader(open(input_filepath, encoding="utf-8"), delimiter="\t", quoting=csv.QUOTE_MINIMAL)
-    for idx, row in enumerate(reader):
-        yield idx, row
+    yield from enumerate(reader)
 
 def main(dataset, split, data_dir, collection, rankings, k_values):
     #### Provide the data_dir where nfcorpus has been downloaded and unzipped
-    if data_dir == None:
-        url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip".format(dataset)
+    if data_dir is None:
+        url = f"https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{dataset}.zip"
         out_dir = os.path.join(pathlib.Path(__file__).parent.absolute(), "datasets")
         data_dir = util.download_and_unzip(url, out_dir)
 
@@ -31,7 +30,7 @@ def main(dataset, split, data_dir, collection, rankings, k_values):
     corpus, queries, qrels = GenericDataLoader(data_folder=data_dir).load(split=split)
 
     inv_map, results = {}, {}
-    
+
     #### Document mappings (from original string to position in tsv file ####
     for idx, row in tsv_reader(collection):
         inv_map[str(idx)] = row[0]

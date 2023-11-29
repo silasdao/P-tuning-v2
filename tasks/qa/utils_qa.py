@@ -152,7 +152,7 @@ def postprocess_qa_predictions(
                             "end_logit": end_logits[end_index],
                         }
                     )
-    
+
         if version_2_with_negative:
             # Add the minimum null prediction
             prelim_predictions.append(min_null_prediction)
@@ -162,7 +162,9 @@ def postprocess_qa_predictions(
         predictions = sorted(prelim_predictions, key=lambda x: x["score"], reverse=True)[:n_best_size]
 
         # Add back the minimum null prediction if it was removed because of its low score.
-        if version_2_with_negative and not any(p["offsets"] == (0, 0) for p in predictions):
+        if version_2_with_negative and all(
+            p["offsets"] != (0, 0) for p in predictions
+        ):
             predictions.append(min_null_prediction)
 
         # Use the offsets to gather the answer text in the original context.

@@ -28,16 +28,16 @@ def init_encoder_components(encoder_type: str, args, **kwargs):
     if encoder_type in ENCODER_INITIALIZERS:
         return ENCODER_INITIALIZERS[encoder_type](args, **kwargs)
     else:
-        raise RuntimeError('unsupported encoder type: {}'.format(encoder_type))
+        raise RuntimeError(f'unsupported encoder type: {encoder_type}')
 
 def init_reader_components(reader_type: str, args, **kwargs):
     if reader_type in READER_INITIALIZERS:
         return READER_INITIALIZERS[reader_type](args)
     else:
-        raise RuntimeError('unsupported reader type: {}'.format(reader_type))
+        raise RuntimeError(f'unsupported reader type: {reader_type}')
 
 def init_tensorizer(tensorizer_type: str, args, **kwargs):
     if tensorizer_type in TENSORIZER_INITIALIZERS:
         return TENSORIZER_INITIALIZERS[tensorizer_type](args)
     else:
-        raise RuntimeError('unsupported tensorizer type: {}'.format(tensorizer_type))
+        raise RuntimeError(f'unsupported tensorizer type: {tensorizer_type}')

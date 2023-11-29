@@ -42,15 +42,15 @@ class QasperReader():
             
     def parser_data(self, path: str):
         with open(path, 'r', encoding="utf-8") as f:
-            logger.info('Reading file %s' % path)
+            logger.info(f'Reading file {path}')
             data = json.load(f)
-            
+
             ret = []
             for article_id, article in data.items():
                 article['article_id'] = article_id
                 d = self._article_to_dict(article)
                 ret.extend(d)
-            logger.info('Aggregated data size: {}'.format(len(ret)))
+            logger.info(f'Aggregated data size: {len(ret)}')
         return ret
 
     def _article_to_dict(self, article: Dict[str, Any]):
@@ -58,7 +58,7 @@ class QasperReader():
         tokenized_context = None
         paragraph_start_indices = None
 
-        if not self._context == 'question_and_evidence':
+        if self._context != 'question_and_evidence':
             tokenized_context, paragraph_start_indices = self._tokenize_paragraphs(paragraphs)
 
         data_dicts = []
@@ -81,15 +81,19 @@ class QasperReader():
                 'all_answers': all_answers
             }
             if self.is_train:
-                for answer, evidence_mask in zip(all_answers, all_evidence_masks):
-                    data_dicts.append({
+                data_dicts.extend(
+                    {
                         'tokenized_question': tokenized_question,
                         'tokenized_context': tokenized_context,
                         'paragraph_start_indices': paragraph_start_indices,
                         'tokenized_answer': self._tokenizer.encode(answer['text']),
-                        'evidence_mask': None, #torch.tensor(evidence_mask),
-                        'metadata': metadata
-                    })
+                        'evidence_mask': None,  # torch.tensor(evidence_mask),
+                        'metadata': metadata,
+                    }
+                    for answer, evidence_mask in zip(
+                        all_answers, all_evidence_masks
+                    )
+                )
             else:
                 data_dicts.append({
                     'tokenized_question': tokenized_question,
@@ -171,12 +175,11 @@ class QasperReader():
             if section_info["section_name"] is not None:
                 paragraphs.append(section_info["section_name"])
             for paragraph in section_info["paragraphs"]:
-                paragraph_text = paragraph.replace("\n", " ").strip()
-                if paragraph_text:
+                if paragraph_text := paragraph.replace("\n", " ").strip():
                     paragraphs.append(paragraph_text)
-            # if self._context == "question_and_introduction":
-            #     # Assuming the first section is the introduction and stopping here.
-            #     break
+                # if self._context == "question_and_introduction":
+                #     # Assuming the first section is the introduction and stopping here.
+                #     break
         return paragraphs
 
     # def _get_sections_paragraphs_from_article(self, article: Dict) -> List[List[str]]:

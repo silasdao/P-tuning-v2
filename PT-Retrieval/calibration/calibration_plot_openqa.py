@@ -29,9 +29,9 @@ def main(args):
 
     dataset = args.dataset
 
-    data_path = "beir_eval/datasets/openqa-%s" % dataset
+    data_path = f"beir_eval/datasets/openqa-{dataset}"
 
-    logging.info("evaluating dataset %s..." % dataset)
+    logging.info(f"evaluating dataset {dataset}...")
 
     if not os.path.exists(data_path):
         logging.info("Convert OpenQA data to corpus, queries and qrels")

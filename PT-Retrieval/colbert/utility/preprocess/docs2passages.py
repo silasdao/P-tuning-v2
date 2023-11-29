@@ -24,11 +24,7 @@ def process_page(inp):
 
     (nwords, overlap, tokenizer), (title_idx, docid, title, url, content) = inp
 
-    if tokenizer is None:
-        words = content.split()
-    else:
-        words = tokenizer.tokenize(content)
-
+    words = content.split() if tokenizer is None else tokenizer.tokenize(content)
     words_ = (words + words) if len(words) > nwords else words
     passages = [words_[offset:offset + nwords] for offset in range(0, len(words) - overlap, nwords - overlap)]
 

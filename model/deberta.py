@@ -156,11 +156,10 @@ class XDropout(torch.autograd.Function):
 
     @staticmethod
     def backward(ctx, grad_output):
-        if ctx.scale > 1:
-            (mask,) = ctx.saved_tensors
-            return grad_output.masked_fill(mask, 0) * ctx.scale, None
-        else:
+        if ctx.scale <= 1:
             return grad_output, None
+        (mask,) = ctx.saved_tensors
+        return grad_output.masked_fill(mask, 0) * ctx.scale, None
 
 
 class StableDropout(nn.Module):
@@ -201,15 +200,14 @@ class StableDropout(nn.Module):
             c.scale = scale
 
     def get_context(self):
-        if self.context_stack is not None:
-            if self.count >= len(self.context_stack):
-                self.context_stack.append(DropoutContext())
-            ctx = self.context_stack[self.count]
-            ctx.dropout = self.drop_prob
-            self.count += 1
-            return ctx
-        else:
+        if self.context_stack is None:
             return self.drop_prob
+        if self.count >= len(self.context_stack):
+            self.context_stack.append(DropoutContext())
+        ctx = self.context_stack[self.count]
+        ctx.dropout = self.drop_prob
+        self.count += 1
+        return ctx
 
 
 class DebertaLayerNorm(nn.Module):
@@ -228,8 +226,7 @@ class DebertaLayerNorm(nn.Module):
         variance = (hidden_states - mean).pow(2).mean(-1, keepdim=True)
         hidden_states = (hidden_states - mean) / torch.sqrt(variance + self.variance_epsilon)
         hidden_states = hidden_states.to(input_type)
-        y = self.weight * hidden_states + self.bias
-        return y
+        return self.weight * hidden_states + self.bias
 
 
 class DebertaSelfOutput(nn.Module):
@@ -278,10 +275,7 @@ class DebertaAttention(nn.Module):
             query_states = hidden_states
         attention_output = self.output(self_output, query_states)
 
-        if return_att:
-            return (attention_output, att_matrix)
-        else:
-            return attention_output
+        return (attention_output, att_matrix) if return_att else attention_output
 
 
 # Copied from transformers.models.bert.modeling_bert.BertIntermediate with Bert->Deberta
@@ -345,10 +339,7 @@ class DebertaLayer(nn.Module):
             attention_output, att_matrix = attention_output
         intermediate_output = self.intermediate(attention_output)
         layer_output = self.output(intermediate_output, attention_output)
-        if return_att:
-            return (layer_output, att_matrix)
-        else:
-            return layer_output
+        return (layer_output, att_matrix) if return_att else layer_output
 
 
 class DebertaEncoder(nn.Module):
@@ -466,8 +457,7 @@ def build_relative_position(query_size, key_size, device):
     k_ids = torch.arange(key_size, dtype=torch.long, device=device)
     rel_pos_ids = q_ids[:, None] - k_ids.view(1, -1).repeat(query_size, 1)
     rel_pos_ids = rel_pos_ids[:query_size, :]
-    rel_pos_ids = rel_pos_ids.unsqueeze(0)
-    return rel_pos_ids
+    return rel_pos_ids.unsqueeze(0)
 
 
 @torch.jit.script
@@ -629,7 +619,7 @@ class DisentangledSelfAttention(nn.Module):
         # bxhxlxd
         if self.talking_head:
             attention_scores = self.head_logits_proj(attention_scores.permute(0, 2, 3, 1)).permute(0, 3, 1, 2)
-        
+
         softmax_mask = attention_mask[:,:, past_key_value_length:,:]
 
         attention_probs = XSoftmax.apply(attention_scores, softmax_mask, -1)
@@ -641,10 +631,7 @@ class DisentangledSelfAttention(nn.Module):
         context_layer = context_layer.permute(0, 2, 1, 3).contiguous()
         new_context_layer_shape = context_layer.size()[:-2] + (-1,)
         context_layer = context_layer.view(*new_context_layer_shape)
-        if return_att:
-            return (context_layer, attention_probs)
-        else:
-            return context_layer
+        return (context_layer, attention_probs) if return_att else context_layer
 
     def disentangled_att_bias(self, query_layer, key_layer, relative_pos, rel_embeddings, scale_factor):
         if relative_pos is None:
@@ -735,9 +722,9 @@ class DebertaEmbeddings(nn.Module):
         else:
             input_shape = inputs_embeds.size()[:-1]
 
-        seq_length = input_shape[1]
-
         if position_ids is None:
+            seq_length = input_shape[1]
+
             position_ids = self.position_ids[:, past_key_values_length : seq_length + past_key_values_length]
 
         if token_type_ids is None:
@@ -1134,8 +1121,7 @@ class DebertaOnlyMLMHead(nn.Module):
         self.predictions = DebertaLMPredictionHead(config)
 
     def forward(self, sequence_output):
-        prediction_scores = self.predictions(sequence_output)
-        return prediction_scores
+        return self.predictions(sequence_output)
 
 
 @add_start_docstrings(
@@ -1232,16 +1218,15 @@ class DebertaForSequenceClassification(DebertaPreTrainedModel):
             else:
                 log_softmax = nn.LogSoftmax(-1)
                 loss = -((log_softmax(logits) * labels).sum(-1)).mean()
-        if not return_dict:
-            output = (logits,) + outputs[1:]
-            return ((loss,) + output) if loss is not None else output
-        else:
+        if return_dict:
             return SequenceClassifierOutput(
                 loss=loss,
                 logits=logits,
                 hidden_states=outputs.hidden_states,
                 attentions=outputs.attentions,
             )
+        output = (logits,) + outputs[1:]
+        return ((loss,) + output) if loss is not None else output
 
 
 @add_start_docstrings(

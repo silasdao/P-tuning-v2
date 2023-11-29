@@ -79,7 +79,7 @@ def check_answer(questions_answers_docs, tokenizer, match_type, index=0) -> List
     global dpr_all_documents
     hits = []
 
-    for i, doc_id in enumerate(doc_ids):
+    for doc_id in doc_ids:
         doc = dpr_all_documents[doc_id]
         # modified
         text = doc[index] # 0 for abstract, 1 for title
